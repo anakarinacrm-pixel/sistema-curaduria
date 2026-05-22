@@ -53,6 +53,11 @@ class FormularioPdfFinal(BaseModel):
 async def leer_formulario(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+from servicios.generar_pdf import cargar_catastro_en_memoria
+@app.on_event("startup")
+def startup():
+    cargar_catastro_en_memoria()
+
 
 # 🔍 CONSULTA CATASTRO (OPTIMIZADO)
 @app.post("/consultar-catastro")
