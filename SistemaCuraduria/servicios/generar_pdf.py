@@ -145,39 +145,43 @@ def obtener_datos_predio(criterio: str):
     }
 
 def ejecutar_llenado_pdf(criterio: str, datos_usuario: dict):
+    if not datos_usuario:
+        raise ValueError("datos_usuario está vacío o es None")
+
     ruta_pdf = os.path.join("plantillas_pdf", "formulario_base.pdf")
     logging.info(f"Procesando PDF definitivo para el criterio: {criterio}")
 
+    # ⚠️ CORRECCIÓN AQUÍ (claves correctas)
     campos_texto = {
-        "txt_direccion": datos_usuario.get("direccion_predio", ""),
-        "txt_barrio": datos_usuario.get("barrio", "") if datos_usuario.get("tipo_suelo") != "RURAL" else "",
-        "txt_vereda": datos_usuario.get("barrio", "") if datos_usuario.get("tipo_suelo") == "RURAL" else "",
-        "txt_matricula": datos_usuario.get("cedula_catastral", ""),
+        "txt_direccion": datos_usuario.get("direccion", ""),
+        "txt_barrio": datos_usuario.get("barrio_vereda", "") if datos_usuario.get("tipo_suelo") != "RURAL" else "",
+        "txt_vereda": datos_usuario.get("barrio_vereda", "") if datos_usuario.get("tipo_suelo") == "RURAL" else "",
+        "txt_matricula": datos_usuario.get("matricula", ""),
         "txt_codigo_predial": datos_usuario.get("codigo_predial", ""),
     }
 
-    # Inicializamos la lista de casillas vacía
     casillas = []
-    
-    # 1. Mapeo Automático del Suelo según el Excel
-    if datos_usuario.get("tipo_suelo") == "RURAL": 
+
+    # ✔️ Suelo automático
+    if datos_usuario.get("tipo_suelo") == "RURAL":
         casillas.append("chk_suelo_b")
-    else: 
+    else:
         casillas.append("chk_suelo_a")
 
-    # 2. Inyección de todas las casillas dinámicas seleccionadas manualmente por el usuario en el HTML
-    if "casillas_extra" in datos_usuario and datos_usuario["casillas_extra"]:
+    # ✔️ Casillas extra (seguro)
+    if datos_usuario.get("casillas_extra"):
         casillas.extend(datos_usuario["casillas_extra"])
 
-    # Manejo dinámico del radio del clima
+    # ✔️ Radios
     radios = {}
     if datos_usuario.get("grupo_clima"):
-        radios["grupo_clima"] = datos_usuario.get("grupo_clima")
+        radios["grupo_clima"] = datos_usuario["grupo_clima"]
 
     nombre_archivo = f"formulario_{criterio}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
     ruta_salida = os.path.join("generados", nombre_archivo)
 
     llenar_pdf(ruta_pdf, ruta_salida, campos_texto, casillas, radios)
+
     logging.info(f"PDF generado correctamente en: {ruta_salida}")
 
     return ruta_salida, nombre_archivo
