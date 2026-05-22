@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Curaduría Urbana</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { background-color: #f0f2f5; padding-top: 40px; font-family: sans-serif; }
+        .card { border-radius: 14px; border: none; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        .nav-tabs .nav-link { color: #555; font-weight: 500; border: none; }
+        .nav-tabs .nav-link.active { color: #0d6efd; font-weight: bold; border-bottom: 3px solid #0d6efd; background: transparent; }
+        .section-block { background: #fdfdfd; border: 1px solid #e3e6f0; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .section-title { font-size: 0.95rem; font-weight: 700; color: #2e59d9; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 15px; border-bottom: 1px solid #eaecf4; padding-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card p-4 bg-white">
+                <h2 class="text-center mb-4 fw-bold text-slate-800">🏛️ Sistema de Curaduría</h2>
+
+                <ul class="nav nav-tabs nav-justified mb-4" id="tabSistema">
+                    <li class="nav-item">
+                        <button class="nav-link active" id="word-tab" data-bs-toggle="tab" data-bs-target="#word-content" type="button">📝 Poder (Word)</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" id="pdf-tab" data-bs-toggle="tab" data-bs-target="#pdf-content" type="button">📄 Formulario Único Largo (PDF)</button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    
+                    <div class="tab-pane fade show active" id="word-content">
+                        <h5 class="mb-3 text-secondary fw-semibold">Generar Poder Persona Natural</h5>
+                        <form id="form-word" class="row g-3">
+                            <div class="col-md-6"><label class="form-label">Nombre propietario</label><input type="text" name="nombre_propietario" required class="form-control"></div>
+                            <div class="col-md-6"><label class="form-label">Cédula propietario</label><input type="text" name="cedula_propietario" required class="form-control"></div>
+                            <div class="col-12"><label class="form-label">Dirección predio</label><input type="text" name="direccion_predio" required class="form-control"></div>
+                            <div class="col-md-6"><label class="form-label">Nombre apoderado</label><input type="text" name="nombre_apoderado" required class="form-control"></div>
+                            <div class="col-md-6"><label class="form-label">Cédula apoderado</label><input type="text" name="cedula_apoderado" required class="form-control"></div>
+                            <div class="col-12"><label class="form-label">Lugar expedición cédula</label><input type="text" name="lugar_expedicion_apoderado" required class="form-control"></div>
+                            <button type="submit" class="btn btn-primary w-100 mt-4 fw-bold">Generar Documento Word</button>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="pdf-content">
+                        <div class="p-3 border rounded mb-4 bg-light">
+                            <h5 class="fw-bold mb-2 text-dark opacity-75">Paso 1: Buscar en Base de Datos</h5>
+                            <div class="input-group">
+                                <input type="text" id="criterio-busqueda" placeholder="Ingrese Cédula del Propietario o Código Predial" class="form-control">
+                                <button type="button" onclick="buscarPredio()" class="btn btn-success fw-bold">Buscar en Catastro</button>
+                            </div>
+                        </div>
+
+                        <form id="form-final-pdf" class="d-none mt-2">
+                            <div class="alert alert-success fw-semibold mb-4">✓ Registro localizado. Valide los datos y defina las casillas legales del formulario:</div>
+
+                            <input type="hidden" id="pdf_criterio" name="criterio">
+                            <input type="hidden" id="pdf_tipo_suelo" name="tipo_suelo">
+
+                            <div class="section-block">
+                                <div class="section-title">2. Información del Predio (Búsqueda Automática)</div>
+                                <div class="row g-3">
+                                    <div class="col-md-6"><label class="form-label small fw-bold">Nombre Propietario</label><input type="text" id="pdf_nombre_propietario" name="nombre_propietario" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label small fw-bold">Dirección Actual</label><input type="text" id="pdf_direccion" name="direccion_predio" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label small fw-bold">Barrio / Vereda</label><input type="text" id="pdf_barrio" name="barrio" class="form-control"></div>
+                                    <div class="col-md-6"><label class="form-label small fw-bold">Matrícula Inmobiliaria</label><input type="text" id="pdf_matricula" name="cedula_catastral" class="form-control"></div>
+                                    <div class="col-12"><label class="form-label small fw-bold">Código Predial</label><input type="text" id="pdf_codigo" name="codigo_predial" class="form-control"></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.1 Tipo de Trámite</div>
+                                <div class="row g-2">
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_tramite_a" id="t1"><label class="form-check-label small" for="t1">A. Licencia Parcelación</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_tramite_b" id="t2"><label class="form-check-label small" for="t2">B. Licencia Urbanización</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_tramite_c" id="t3"><label class="form-check-label small" for="t3">C. Licencia Subdivisión</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_tramite_d" id="t4"><label class="form-check-label small" for="t4">D. Licencia Construcción</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_tramite_e" id="t5"><label class="form-check-label small" for="t5">E. Reconocimiento Edif.</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_tramite_f" id="t6"><label class="form-check-label small" for="t6">F. Otras Actuaciones</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.2 Objeto del Trámite</div>
+                                <div class="row g-2">
+                                    <div class="col-md-3"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_objeto_inicial" id="obj1"><label class="form-check-label small" for="obj1">Inicial</label></div></div>
+                                    <div class="col-md-3"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_objeto_prorroga" id="obj2"><label class="form-check-label small" for="obj2">Prórroga</label></div></div>
+                                    <div class="col-md-3"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_objeto_modificacion" id="obj3"><label class="form-check-label small" for="obj3">Modificación</label></div></div>
+                                    <div class="col-md-3"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_objeto_revalidacion" id="obj4"><label class="form-check-label small" for="obj4">Revalidación</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.3 Modalidad Licencia de Urbanización</div>
+                                <div class="row g-2">
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_urb_a" id="urb1"><label class="form-check-label small" for="urb1">a. Desarrollo</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_urb_b" id="urb2"><label class="form-check-label small" for="urb2">b. Saneamiento</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_urb_c" id="urb3"><label class="form-check-label small" for="urb3">c. Reurbanización</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.4 Modalidad Licencia de Subdivisión</div>
+                                <div class="row g-2">
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_subd_a" id="sub1"><label class="form-check-label small" for="sub1">a. Subdivisión Rural</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_subd_b" id="sub2"><label class="form-check-label small" for="sub2">b. Subdivisión Urbana</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_subd_c" id="sub3"><label class="form-check-label small" for="sub3">c. Reloteo</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.5 Modalidad Licencia de Construcción</div>
+                                <div class="row g-2">
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_const_a" id="cst1"><label class="form-check-label small" for="cst1">a. Obra Nueva</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_const_b" id="cst2"><label class="form-check-label small" for="cst2">b. Ampliación</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_const_c" id="cst3"><label class="form-check-label small" for="cst3">c. Adecuación</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_const_d" id="cst4"><label class="form-check-label small" for="cst4">d. Modificación</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_const_e" id="cst5"><label class="form-check-label small" for="cst5">e. Restauración</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_const_f" id="cst6"><label class="form-check-label small" for="cst6">f. Reforzamiento Est.</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_const_g_total" id="cst7"><label class="form-check-label small" for="cst7">g. Demolición Total</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_const_g_parcial" id="cst8"><label class="form-check-label small" for="cst8">g. Demolición Parcial</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_const_h" id="cst9"><label class="form-check-label small" for="cst9">h. Reconstrucción</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_const_i" id="cst10"><label class="form-check-label small" for="cst10">i. Cerramiento</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.6 Usos del Suelo</div>
+                                <div class="row g-2">
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_uso_a" id="uso1"><label class="form-check-label small" for="uso1">Vivienda</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_uso_b" id="uso2"><label class="form-check-label small" for="uso2">Comercio y/o Servicios</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_uso_c" id="uso3"><label class="form-check-label small" for="uso3">Institucional</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_uso_d" id="uso4"><label class="form-check-label small" for="uso4">Industrial</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_uso_e" id="uso5"><label class="form-check-label small" for="uso5">Otro / ¿Cuál?</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.7 Área Construida</div>
+                                <div class="row g-2">
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_area_a" id="ar1"><label class="form-check-label small" for="ar1">Igual o Mayor a 2.000 m²</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_area_b" id="ar2"><label class="form-check-label small" for="ar2">Menor a 2.000 m²</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_area_c" id="ar3"><label class="form-check-label small" for="ar3">Susceptible de superar 2.000 m²</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.8 Tipo de Vivienda</div>
+                                <div class="row g-2">
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_vis_a" id="vis1"><label class="form-check-label small" for="vis1">VIP</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_vis_b" id="vis2"><label class="form-check-label small" for="vis2">VIS</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_vis_c" id="vis3"><label class="form-check-label small" for="vis3">NO VIS</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.9 Bien de Interés Cultural</div>
+                                <div class="row g-2">
+                                    <div class="col-md-6"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_cultural_a" id="cul1"><label class="form-check-label small" for="cul1">SÍ</label></div></div>
+                                    <div class="col-md-6"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_cultural_b" id="cul2"><label class="form-check-label small" for="cul2">NO</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.10.1 Construcción Sostenible</div>
+                                <div class="row g-2">
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_sost_a" id="sos1"><label class="form-check-label small" for="sos1">Medidas Pasivas</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_sost_b" id="sos2"><label class="form-check-label small" for="sos2">Medidas Activas</label></div></div>
+                                    <div class="col-md-4"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_sost_c" id="sos3"><label class="form-check-label small" for="sos3">Medidas Activas y Pasivas</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="section-block">
+                                <div class="section-title">1.10.2 Zonificación Climática</div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="radio" name="grupo_clima" value="/A" id="cli1"><label class="form-check-label small" for="cli1">Frío</label></div></div>
+                                    <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="radio" name="grupo_clima" value="/B" id="cli2"><label class="form-check-label small" for="cli2">Templado</label></div></div>
+                                    <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="radio" name="grupo_clima" value="/C" id="cli3"><label class="form-check-label small" for="cli3">Cálido Seco</label></div></div>
+                                    <div class="col-md-3"><div class="form-check"><input class="form-check-input" type="radio" name="grupo_clima" value="/D" id="cli4"><label class="form-check-label small" for="cli4">Cálido Húmedo</label></div></div>
+                                </div>
+                                <div class="row g-2 pt-2 border-top">
+                                    <label class="form-label small fw-bold text-muted col-12">¿Su predio se encuentra en zona distinta a la asignada?</label>
+                                    <div class="col-md-6"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_clima_e" id="clie"><label class="form-check-label small" for="clie">SÍ</label></div></div>
+                                    <div class="col-md-6"><div class="form-check"><input class="form-check-input chk-extra" type="checkbox" value="chk_clima_f" id="climaf"><label class="form-check-label small" for="climaf">NO</label></div></div>
+                                </div>
+                            </div>
+
+                            <div class="col-12 mt-4 mb-5">
+                                <button type="submit" class="btn btn-success w-100 py-3 fw-bold shadow-sm">Paso 3: Estampar Datos y Descargar PDF Oficial</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // CAMBIO EFECTUADO: Definición de la URL base pública del túnel de Serveo
+    const API_BASE = "https://MI-URL-SERVEO.serveousercontent.com";
+
+    async function buscarPredio() {
+        const criterio = document.getElementById('criterio-busqueda').value.trim();
+        if (!criterio) {
+            Swal.fire('Atención', 'Por favor ingrese un criterio de búsqueda', 'warning');
+            return;
+        }
+        Swal.fire({ title: 'Consultando Bases...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        try {
+            // CAMBIO EFECTUADO: Inyección de la constante API_BASE en el fetch
+            const response = await fetch(`${API_BASE}/consultar-catastro`, { 
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ criterio: criterio })
+            });
+            if (!response.ok) throw new Error('No se ubicaron registros con ese documento o predial.');
+            const datosExcel = await response.json();
+            Swal.close();
+
+            document.getElementById('pdf_criterio').value = criterio;
+            document.getElementById('pdf_nombre_propietario').value = datosExcel.nombre || '';
+            document.getElementById('pdf_direccion').value = datosExcel.direccion || '';
+            document.getElementById('pdf_barrio').value = datosExcel.barrio_vereda || '';
+            document.getElementById('pdf_matricula').value = datosExcel.matricula || '';
+            document.getElementById('pdf_codigo').value = datosExcel.codigo_predial || '';
+            document.getElementById('pdf_tipo_suelo').value = datosExcel.tipo_suelo || 'URBANO';
+
+            document.querySelectorAll('#form-final-pdf input[type="checkbox"]').forEach(el => el.checked = false);
+            document.querySelectorAll('#form-final-pdf input[type="radio"]').forEach(el => el.checked = false);
+
+            document.getElementById('form-final-pdf').classList.remove('d-none');
+        } catch (error) {
+            Swal.fire('Predio No Localizado', error.message, 'error');
+        }
+    }
+
+    document.getElementById('form-final-pdf').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const payload = Object.fromEntries(formData.entries());
+        
+        payload.casillas_extra = Array.from(document.querySelectorAll('.chk-extra:checked')).map(el => el.value);
+
+        Swal.fire({ title: 'Estampando Firmas y Generando PDF...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        try {
+            // CAMBIO EFECTUADO: Inyección de la constante API_BASE en el fetch
+            const response = await fetch(`${API_BASE}/generar-pdf`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!response.ok) {
+                const textErr = await response.json();
+                throw new Error(textErr.detail || 'Fallo en la inyección de campos.');
+            }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `formulario_unico_${payload.criterio}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            Swal.close();
+            Swal.fire('¡Proceso Exitoso!', 'El PDF ha sido generado bajo los parámetros seleccionados.', 'success');
+        } catch (error) {
+            Swal.fire('Error de Escritura', error.message, 'error');
+        }
+    });
+
+    // Evento Word
+    document.getElementById('form-word').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const data = Object.fromEntries(formData.entries());
+        Swal.fire({ title: 'Generando Word...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        try {
+            // CAMBIO EFECTUADO: Inyección de la constante API_BASE en el fetch
+            const response = await fetch(`${API_BASE}/generar-word`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            if (!response.ok) throw new Error('Error en el servidor.');
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `poder_${data.cedula_propietario}.docx`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            Swal.close();
+        } catch (error) {
+            Swal.fire('Error', error.message, 'error');
+        }
+    });
+</script>
+</body>
+</html>

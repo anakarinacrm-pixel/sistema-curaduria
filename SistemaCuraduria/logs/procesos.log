@@ -1,0 +1,14 @@
+2026-05-21 16:26:23,542 - INFO - Formulario generado correctamente: generados/formulario_5540539_20260521_162623.pdf
+2026-05-21 18:43:54,816 - INFO - Inicio generación PDF para criterio: 37813876    
+2026-05-21 18:54:28,901 - INFO - Procesando PDF definitivo para el criterio: 37813876
+2026-05-21 18:54:29,381 - INFO - PDF generado correctamente en: generados\formulario_37813876_20260521_185428.pdf
+2026-05-21 19:06:43,323 - INFO - Iniciando precarga de archivos Excel en memoria RAM...
+2026-05-21 19:08:11,964 - INFO - Precarga en RAM completada con éxito.
+2026-05-21 19:13:09,981 - INFO - Procesando PDF definitivo para el criterio: 37813876
+2026-05-21 19:13:10,426 - INFO - PDF generado correctamente en: generados\formulario_37813876_20260521_191309.pdf
+2026-05-21 19:18:50,811 - INFO - Procesando PDF definitivo para el criterio: 37813876
+2026-05-21 19:18:51,270 - INFO - PDF generado correctamente en: generados\formulario_37813876_20260521_191850.pdf
+2026-05-21 19:22:29,393 - INFO - Procesando PDF definitivo para el criterio: 37813876
+2026-05-21 19:22:29,841 - INFO - PDF generado correctamente en: generados\formulario_37813876_20260521_192229.pdf
+2026-05-21 19:24:54,593 - INFO - Procesando PDF definitivo para el criterio: 37813876
+2026-05-21 19:24:55,135 - INFO - PDF generado correctamente en: generados\formulario_37813876_20260521_192454.pdf
