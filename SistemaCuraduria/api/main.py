@@ -1,14 +1,15 @@
+import os
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from typing import List, Optional
+
 from servicios.generar_word import generar_documento_word
 from servicios.generar_pdf import obtener_datos_predio, ejecutar_llenado_pdf
-import os
 
 # =========================================================
-# CONFIGURACIÓN BASE (IMPORTANTE PARA RENDER)
+# CONFIGURACIÓN BASE
 # =========================================================
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,6 +33,7 @@ class DatosFormulario(BaseModel):
     cedula_apoderado: str
     lugar_expedicion_apoderado: str
 
+
 class FormularioPdfFinal(BaseModel):
     criterio: str
     nombre_propietario: Optional[str] = ""
@@ -42,6 +44,7 @@ class FormularioPdfFinal(BaseModel):
     tipo_suelo: Optional[str] = "URBANO"
     casillas_extra: Optional[List[str]] = []
 
+
 # =========================================================
 # ENDPOINTS
 # =========================================================
@@ -51,18 +54,20 @@ async def leer_formulario(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
+# 🔍 CONSULTA CATASTRO (OPTIMIZADO)
 @app.post("/consultar-catastro")
 async def consultar_catastro(data: dict = None):
 
     if not data:
-        return {"status": "success"}
+        raise HTTPException(status_code=400, detail="No se enviaron datos")
 
     criterio_valor = data.get("text-1") or data.get("criterio")
 
+    # fallback por si viene raro del frontend
     if not criterio_valor and isinstance(data, dict):
         criterio_valor = next(iter(data.values()), None)
 
-    if not criterio_valor:
+    if not criterio_valor or str(criterio_valor).strip() == "":
         raise HTTPException(status_code=400, detail="Criterio vacío")
 
     resultado = obtener_datos_predio(str(criterio_valor).strip())
@@ -73,6 +78,7 @@ async def consultar_catastro(data: dict = None):
     return resultado
 
 
+# 📄 GENERAR WORD
 @app.post("/generar-word")
 async def procesar_formulario(datos: DatosFormulario):
     try:
@@ -83,19 +89,30 @@ async def procesar_formulario(datos: DatosFormulario):
             filename=nombre,
             media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         )
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# 📄 GENERAR PDF (CORREGIDO)
 @app.post("/generar-pdf")
 async def generar_pdf_final(data: FormularioPdfFinal):
     try:
-        ruta, nombre = ejecutar_llenado_pdf(data.model_dump())
+        datos = data.model_dump()
+
+        criterio = datos.get("criterio")
+
+        if not criterio or str(criterio).strip() == "":
+            raise HTTPException(status_code=400, detail="Criterio vacío")
+
+        # ✅ AQUÍ ESTABA EL ERROR
+        ruta, nombre = ejecutar_llenado_pdf(criterio, datos)
 
         return FileResponse(
             path=ruta,
             filename=nombre,
             media_type='application/pdf'
         )
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
